@@ -260,6 +260,8 @@ jobs:
             echo "正在配置SukiSU Ultra..."
             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash -s builtin
             cd ./KernelSU
+            # 修复 SukiSU Ultra 在 6.1 内核上对 USER_ARG_NULL 的传参类型不匹配
+            sed -i 's/KSU_SULOG_EVENT_IOCTL_GRANT_ROOT, NULL, USER_ARG_NULL, gfp/KSU_SULOG_EVENT_IOCTL_GRANT_ROOT, NULL, \&USER_ARG_NULL, gfp/' ../common/drivers/kernelsu/sulog/event.c
             # 获取当前 Git 提交的短哈希 (8位)
             GIT_COMMIT_HASH=$(git rev-parse --short=8 HEAD)
             echo "当前提交哈希: $GIT_COMMIT_HASH"
