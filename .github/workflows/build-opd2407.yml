@@ -394,7 +394,10 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.bbr_enable }}" != "false" ]]; then
             echo "正在添加BBR等拥塞控制算法..."
-            cd kernel_workspace
+            cd kernel_workspace/common
+            curl -fsSL --retry 3 https://github.com/cctv18/android_kernel_oneplus_mt6897/commit/137c7a3ae9c6c0ec6735b4428a2ba2d10799bac4.patch |
+              patch --batch -p1 -F 2
+            cd ..
             #开启TCP拥塞控制算法控制器（必需）
             echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig
             ################################################################################################################################
@@ -482,9 +485,11 @@ jobs:
         if: inputs.ssg_enable
         run: |
           echo "正在启用三星SSG IO调度器(一加12等极少数机型开启后可能不开机,若出现bug请关闭此项)…"
-          cd kernel_workspace
-          echo "CONFIG_MQ_IOSCHED_SSG=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_MQ_IOSCHED_SSG_CGROUP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          cd kernel_workspace/common
+          curl -fsSL --retry 3 https://github.com/cctv18/android_kernel_oneplus_mt6897/commit/846431e9c0c45a665c28069b143b73f043365dea.patch |
+            patch --batch -p1 -F 2
+          echo "CONFIG_MQ_IOSCHED_SSG=y" >> ./arch/arm64/configs/gki_defconfig
+          echo "CONFIG_MQ_IOSCHED_SSG_CGROUP=y" >> ./arch/arm64/configs/gki_defconfig
 
       - name: 启用Re-Kernel支持
         if: inputs.rekernel_enable
@@ -531,6 +536,7 @@ jobs:
           fi
           if [[ "${{ inputs.bbr_enable }}" != "false" ]]; then
             grep -qx 'CONFIG_TCP_CONG_BBR=y' out/.config
+            grep -qx 'CONFIG_TCP_CONG_BRUTAL=y' out/.config
           fi
           if [[ "${{ inputs.better_net }}" == "true" ]]; then
             grep -qx 'CONFIG_IP_SET=y' out/.config
